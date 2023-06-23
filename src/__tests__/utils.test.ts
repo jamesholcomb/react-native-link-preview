@@ -74,22 +74,6 @@ describe('getHtmlEntitiesDecodedText', () => {
   })
 })
 
-describe('getContent', () => {
-  it('returns undefined if neither left nor right is equal to type', () => {
-    expect.assertions(1)
-    const content = utils.getContent('left', 'right', 'type')
-    expect(content).toBeUndefined()
-  })
-
-  it('returns right if left is equal to type', () => {
-    expect.assertions(1)
-    const left = 'left'
-    const right = 'right'
-    const content = utils.getContent(left, right, left)
-    expect(content).toStrictEqual(right)
-  })
-})
-
 describe('getImageSize', () => {
   it('gets image size', () => {
     expect.assertions(2)

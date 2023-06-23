@@ -31,15 +31,6 @@ export const getHtmlEntitiesDecodedText = (text?: string) => {
   return decode(actualText)
 }
 
-export const getContent = (left: string, right: string, type: string) => {
-  const contents = {
-    [left.trim()]: right,
-    [right.trim()]: left,
-  }
-
-  return contents[type]?.trim()
-}
-
 export const getImageSize = (url: string) => {
   return new Promise<Size>((resolve, reject) => {
     Image.getSize(
