@@ -163,18 +163,16 @@ export const getPreviewData = async (text: string, requestTimeout = 5000) => {
     previewData.title = metaPreviewData.title
 
     if (!previewData.image) {
-      let imageMatches: RegExpMatchArray | null
-      const tags: RegExpMatchArray[] = []
-      while ((imageMatches = REGEX_IMAGE_TAG.exec(html)) !== null) {
-        tags.push([...imageMatches])
-      }
+      const imageSources = htmlElements
+        .querySelectorAll('img')
+        .filter((e) => e.hasAttribute('src'))
+        .filter(({ attrs }) => !attrs.src.startsWith('data'))
+        .map(({ attrs }) => attrs.src)
 
       let images: PreviewDataImage[] = []
 
-      for (const tag of tags
-        .filter((t) => !t[1].startsWith('data'))
-        .slice(0, 5)) {
-        const image = await getPreviewDataImage(getActualImageUrl(url, tag[1]))
+      for (const src of imageSources.slice(0, 5)) {
+        const image = await getPreviewDataImage(getActualImageUrl(url, src))
 
         if (!image) continue
 
@@ -218,8 +216,6 @@ export const oneOf =
 
 export const REGEX_EMAIL = /([a-zA-Z0-9+._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/g
 export const REGEX_IMAGE_CONTENT_TYPE = /image\/*/g
-// Consider empty line after img tag and take only the src field, space before to not match data-src for example
-export const REGEX_IMAGE_TAG = /<img[\n\r]*.*? src=["'](.*?)["']/g
 export const REGEX_LINK =
   /((http|ftp|https):\/\/)?([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?/i
 export const REGEX_TITLE = /<title.*?>(.*?)<\/title>/g
