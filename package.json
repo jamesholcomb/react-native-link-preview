@@ -34,7 +34,8 @@
     "type-coverage": "type-coverage"
   },
   "dependencies": {
-    "html-entities": "^2.3.2"
+    "html-entities": "^2.3.2",
+    "node-html-parser": "^6.1.5"
   },
   "devDependencies": {
     "@babel/core": "^7.16.12",
@@ -44,6 +45,8 @@
     "@types/jest": "^27.4.0",
     "@types/react-native": "^0.66.15",
     "@types/react-test-renderer": "^17.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.60.0",
+    "@typescript-eslint/parser": "^5.60.0",
     "babel-jest": "^27.4.6",
     "eslint": "^7.32.0",
     "eslint-plugin-jest": "^26.0.0",

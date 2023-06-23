@@ -1,4 +1,5 @@
 import { decode } from 'html-entities'
+import { parse } from 'node-html-parser'
 import { Image } from 'react-native'
 
 import { PreviewData, PreviewDataImage, Size } from './types'
@@ -77,10 +78,7 @@ export const getPreviewData = async (text: string, requestTimeout = 5000) => {
       url = 'https://' + url
     }
 
-    // eslint-disable-next-line no-undef
-    let abortControllerTimeout: NodeJS.Timeout
     const abortController = new AbortController()
-
     const request = fetch(url, {
       headers: {
         'User-Agent':
@@ -88,11 +86,9 @@ export const getPreviewData = async (text: string, requestTimeout = 5000) => {
       },
       signal: abortController.signal,
     })
-
-    abortControllerTimeout = setTimeout(() => {
+    const abortControllerTimeout = setTimeout(() => {
       abortController.abort()
     }, requestTimeout)
-
     const response = await request
 
     clearTimeout(abortControllerTimeout)
@@ -112,16 +108,24 @@ export const getPreviewData = async (text: string, requestTimeout = 5000) => {
     // Some pages return undefined
     if (!html) return previewData
 
-    const head = html.substring(0, html.indexOf('<body'))
+    const htmlElements = parse(html)
 
     // Get page title
-    const title = REGEX_TITLE.exec(head)
-    previewData.title = getHtmlEntitiesDecodedText(title?.[1])
+    previewData.title = getHtmlEntitiesDecodedText(
+      htmlElements.getAttribute('title')
+    )
 
-    let matches: RegExpMatchArray | null
-    const meta: RegExpMatchArray[] = []
-    while ((matches = REGEX_META.exec(head)) !== null) {
-      meta.push([...matches])
+    const meta = htmlElements
+      .querySelectorAll('meta')
+      .filter(
+        (m) =>
+          m.getAttribute('property')?.startsWith('og:') ||
+          m.getAttribute('property') === 'description'
+      )
+      .map((e) => e.attrs)
+
+    if (meta.length === 0) {
+      return previewData
     }
 
     const metaPreviewData = meta.reduce<{
@@ -129,27 +133,26 @@ export const getPreviewData = async (text: string, requestTimeout = 5000) => {
       imageUrl?: string
       title?: string
     }>(
-      (acc, curr) => {
-        // Verify that we have property/name and content
-        // Note that if a page will specify property, name and content in the same meta, regex will fail
-        if (!curr[2] || !curr[3]) return acc
+      (acc, { property, content }) => {
+        // Takes the last occurrence
+        // For description, take the meta description tag into consideration
+        const description = ['description', 'og:description'].includes(property)
+          ? getHtmlEntitiesDecodedText(content)
+          : undefined
 
-        // Only take the first occurrence
-        // For description take the meta description tag into consideration
-        const description =
-          !acc.description &&
-          (getContent(curr[2], curr[3], 'og:description') ||
-            getContent(curr[2], curr[3], 'description'))
-        const ogImage =
-          !acc.imageUrl && getContent(curr[2], curr[3], 'og:image')
-        const ogTitle = !acc.title && getContent(curr[2], curr[3], 'og:title')
+        const ogImageUrl =
+          property === 'og:image'
+            ? getHtmlEntitiesDecodedText(content)
+            : undefined
+        const ogTitle =
+          property === 'og:title'
+            ? getHtmlEntitiesDecodedText(content)
+            : undefined
 
         return {
-          description: description
-            ? getHtmlEntitiesDecodedText(description)
-            : acc.description,
-          imageUrl: ogImage ? getActualImageUrl(url, ogImage) : acc.imageUrl,
-          title: ogTitle ? getHtmlEntitiesDecodedText(ogTitle) : acc.title,
+          description: description || acc.description,
+          imageUrl: getActualImageUrl(url, ogImageUrl) || acc.imageUrl,
+          title: ogTitle || acc.title,
         }
       },
       { title: previewData.title }
@@ -219,7 +222,4 @@ export const REGEX_IMAGE_CONTENT_TYPE = /image\/*/g
 export const REGEX_IMAGE_TAG = /<img[\n\r]*.*? src=["'](.*?)["']/g
 export const REGEX_LINK =
   /((http|ftp|https):\/\/)?([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?/i
-// Some pages write content before the name/property, some use single quotes instead of double
-export const REGEX_META =
-  /<meta.*?(property|name)=["'](.*?)["'].*?content=["'](.*?)["'].*?>/g
 export const REGEX_TITLE = /<title.*?>(.*?)<\/title>/g
