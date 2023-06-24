@@ -65,8 +65,14 @@ export const getPreviewData = async (text: string, requestTimeout = 5000) => {
 
     let url = link
 
-    if (!url.toLowerCase().startsWith('http')) {
-      url = 'https://' + url
+    // force https urls
+    if (url.toLowerCase().startsWith('http:')) {
+      url = url.replace('http:', 'https:')
+    }
+
+    // handle absolute urls
+    if (!url.toLowerCase().startsWith('http:')) {
+      url = `https://${url}`
     }
 
     const abortController = new AbortController()

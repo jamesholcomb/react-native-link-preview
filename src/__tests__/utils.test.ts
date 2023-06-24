@@ -90,7 +90,7 @@ describe('getImageSize', () => {
       success(460, 460)
     })
     act(() => {
-      error(new Error())
+      error?.(new Error())
     })
     getSizeMock.mockRestore()
   })
