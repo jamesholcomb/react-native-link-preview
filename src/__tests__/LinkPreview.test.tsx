@@ -13,7 +13,9 @@ describe('link preview', () => {
     const { getByRole } = render(<LinkPreview text='' />)
     const button = getByRole('button')
     fireEvent.press(button)
-    expect(openUrlMock).not.toHaveBeenCalled()
+    await waitFor(() => {
+      expect(openUrlMock).not.toHaveBeenCalled()
+    })
     openUrlMock.mockRestore()
   })
 
