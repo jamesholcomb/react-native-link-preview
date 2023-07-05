@@ -71,7 +71,7 @@ export const getPreviewData = async (text: string, requestTimeout = 5000) => {
     }
 
     // handle absolute urls
-    if (!url.toLowerCase().startsWith('http:')) {
+    if (!url.toLowerCase().includes('://')) {
       url = `https://${url}`
     }
 

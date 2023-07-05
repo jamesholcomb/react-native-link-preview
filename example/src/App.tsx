@@ -19,14 +19,24 @@ const App = () => (
   <SafeAreaView style={styles.container}>
     <ScrollView contentContainerStyle={styles.contentContainer}>
       <LinkPreview
-        containerStyle={styles.previewContainer}
+        containerStyle={styles.previewContainer}         
         enableAnimation
-        text='https://flyer.chat'
+        text='Check out https://flyer.chat or contact us at support@flyer.chat'
       />
       <LinkPreview
         containerStyle={styles.previewContainer}
         enableAnimation
         text='github.com/flyerhq'
+      />
+      <LinkPreview
+        containerStyle={styles.previewContainer}
+        enableAnimation
+        text='The ride https://ridewithgps.com/routes/42301095'
+      />      
+      <LinkPreview
+        containerStyle={styles.previewContainer}
+        enableAnimation
+        text='Or at rwgps://routes/42301095'
       />
     </ScrollView>
   </SafeAreaView>
@@ -40,7 +50,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   previewContainer: {
-    backgroundColor: '#f7f7f8',
+    backgroundColor: 'darkgray',
     borderRadius: 20,
     marginTop: 16,
     overflow: 'hidden',
