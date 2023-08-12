@@ -19,7 +19,7 @@ const App = () => (
   <SafeAreaView style={styles.container}>
     <ScrollView contentContainerStyle={styles.contentContainer}>
       <LinkPreview
-        containerStyle={styles.previewContainer}         
+        containerStyle={styles.previewContainer}
         enableAnimation
         text='Check out https://flyer.chat or contact us at support@flyer.chat'
       />
@@ -32,7 +32,7 @@ const App = () => (
         containerStyle={styles.previewContainer}
         enableAnimation
         text='The ride https://ridewithgps.com/routes/42301095'
-      />      
+      />
       <LinkPreview
         containerStyle={styles.previewContainer}
         enableAnimation

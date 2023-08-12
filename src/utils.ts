@@ -44,35 +44,31 @@ export const getImageSize = (url: string) => {
   })
 }
 
+export const getUrl = (text: string) => {
+  const textWithoutEmails = text.replace(REGEX_EMAIL, '').trim()
+  const textWithoutMentions = stripBetween(textWithoutEmails, '@[', ']')
+  let url = textWithoutMentions?.match(REGEX_LINK)?.[0]
+
+  if (!url) return ''
+
+  // force https urls
+  if (url.toLowerCase().startsWith('http:')) {
+    url = url.replace('http:', 'https:')
+  }
+
+  return url
+}
+
 // Functions below use functions from the same file and mocks are not working
 /* istanbul ignore next */
 export const getPreviewData = async (text: string, requestTimeout = 5000) => {
-  const previewData: PreviewData = {
-    description: undefined,
-    image: undefined,
-    link: undefined,
-    title: undefined,
-  }
+  const previewData: PreviewData = {}
 
   try {
-    const textWithoutEmails = text.replace(REGEX_EMAIL, '').trim()
+    const url = getUrl(text)
 
-    if (!textWithoutEmails) return previewData
-
-    const link = textWithoutEmails.match(REGEX_LINK)?.[0]
-
-    if (!link) return previewData
-
-    let url = link
-
-    // force https urls
-    if (url.toLowerCase().startsWith('http:')) {
-      url = url.replace('http:', 'https:')
-    }
-
-    // handle absolute urls
-    if (!url.toLowerCase().includes('://')) {
-      url = `https://${url}`
+    if (!url) {
+      return previewData
     }
 
     const abortController = new AbortController()
@@ -183,6 +179,7 @@ export const getPreviewData = async (text: string, requestTimeout = 5000) => {
 
     return previewData
   } catch {
+    // swallow..we tried our best
     return previewData
   }
 }
@@ -211,8 +208,28 @@ export const oneOf =
     return truthy ? truthy(...args) : falsy
   }
 
+function stripBetween(
+  target: string,
+  delimiter_start: string,
+  delimiter_end: string
+): string {
+  let result = ''
+  let inside = false
+  for (let i = 0; i < target.length; i++) {
+    const char = target[i]
+    if (target.slice(i, i + delimiter_start.length) === delimiter_start) {
+      inside = true
+      i += delimiter_start.length - 1
+    } else if (target.slice(i, i + delimiter_end.length) === delimiter_end) {
+      inside = false
+      i += delimiter_end.length - 1
+    } else if (!inside) {
+      result += char
+    }
+  }
+  return result
+}
+
 export const REGEX_EMAIL = /([a-zA-Z0-9+._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/g
 export const REGEX_IMAGE_CONTENT_TYPE = /image\/*/g
-// all http/https links except those contained within @ mention syntax
-export const REGEX_LINK =
-  /(?<!@\[)((http|https):\/\/[\w-]+(\.[\w-]+)+([/?#][\w-./?%&=]*)?)(?!\])/i
+export const REGEX_LINK = /(https?:\/\/[^\s]+)/i

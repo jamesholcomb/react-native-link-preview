@@ -96,6 +96,110 @@ describe('getImageSize', () => {
   })
 })
 
+describe('getUrl', () => {
+  it('returns empty if no url is provided', () => {
+    expect.assertions(1)
+    const url = utils.getUrl('hi')
+    expect(url).toBe('')
+  })
+
+  it('handles links', () => {
+    expect.assertions(1)
+    const url = utils.getUrl('check out https://yahoo.com')
+    expect(url).toBe('https://yahoo.com')
+  })
+
+  it('forces https', () => {
+    expect.assertions(1)
+    const url = utils.getUrl('check out http://yahoo.com')
+    expect(url).toBe('https://yahoo.com')
+  })
+
+  it('handles links with query params', () => {
+    expect.assertions(1)
+    const url = utils.getUrl('check out https://yahoo.com?query=param')
+    expect(url).toBe('https://yahoo.com?query=param')
+  })
+
+  it('handles links with query params and hash', () => {
+    expect.assertions(1)
+    const url = utils.getUrl('check out https://yahoo.com?query=param#hash')
+    expect(url).toBe('https://yahoo.com?query=param#hash')
+  })
+
+  it('ignores text that look like an absolute link', () => {
+    expect.assertions(1)
+    const url = utils.getUrl('check out yahoo.com')
+    expect(url).toBe('')
+  })
+
+  it('handles links that include a redirect', () => {
+    expect.assertions(1)
+    const url = utils.getUrl(
+      'check out https://yahoo.com?redirect=https://google.com'
+    )
+    expect(url).toBe('https://yahoo.com?redirect=https://google.com')
+  })
+
+  it('handles inputs with non-link grammar', () => {
+    expect.assertions(1)
+    const url = utils.getUrl('I will be there tonight.it works for me')
+    expect(url).toBe('')
+  })
+
+  it('handles links with IP address', () => {
+    expect.assertions(1)
+    const url = utils.getUrl('check out https://192.168.0.1')
+    expect(url).toBe('https://192.168.0.1')
+  })
+
+  it('handles links with port number', () => {
+    expect.assertions(1)
+    const url = utils.getUrl('check out https://yahoo.com:8080')
+    expect(url).toBe('https://yahoo.com:8080')
+  })
+
+  it('handles links with unsupported protocol', () => {
+    expect.assertions(1)
+    const url = utils.getUrl('check out ftp://yahoo.com')
+    expect(url).toBe('')
+  })
+
+  it('returns first link from input with multiple links', () => {
+    expect.assertions(1)
+    const url = utils.getUrl(
+      'check out https://yahoo.com and https://google.com'
+    )
+    expect(url).toBe('https://yahoo.com')
+  })
+
+  it('ignores emails', () => {
+    expect.assertions(1)
+    const url = utils.getUrl('hi bill@ms.com and steve@ms.com are going')
+    expect(url).toBe('')
+  })
+
+  it('ignores email handles link', () => {
+    expect.assertions(1)
+    const url = utils.getUrl('check out https://yahoo.com for me bill@ms.com')
+    expect(url).toBe('https://yahoo.com')
+  })
+
+  it('ignores mentions', () => {
+    expect.assertions(1)
+    const url = utils.getUrl('hi @[Bill Gates (ms.com)] are you going?')
+    expect(url).toBe('')
+  })
+
+  it('ignores mention, handles link', () => {
+    expect.assertions(1)
+    const url = utils.getUrl(
+      'hey @[Bill Gates (ms.com)] check out https://yahoo.com'
+    )
+    expect(url).toBe('https://yahoo.com')
+  })
+})
+
 describe('oneOf', () => {
   it('returns a truthy param', () => {
     expect.assertions(1)
